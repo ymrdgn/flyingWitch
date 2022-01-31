@@ -1,11 +1,10 @@
-import Phaser from "phaser";
+import BaseScene from "./BaseScene";
 
 const TREE_TO_RENDER = 4;
 
-class PlayScene extends Phaser.Scene {
+class PlayScene extends BaseScene {
     constructor(config) {
-        super('PlayScene');
-        this.config = config;
+        super('PlayScene', config);
 
         this.witch = null;
         this.trees = null;
@@ -19,18 +18,13 @@ class PlayScene extends Phaser.Scene {
         this.scoreText = "";
     }
 
-    preload() {
-        this.load.image('sky', 'assets/sky.png');
-        this.load.image('witch', 'assets/witch.png');
-        this.load.image('tree', 'assets/tree.png');
-    }
-
     create() {
-        this.createBG();
+        super.create();
         this.createWitch();
         this.createTree();
         this.createColliders();
         this.createScore();
+        this.createPause();
         this.handleInputs();
     }
 
@@ -76,6 +70,20 @@ class PlayScene extends Phaser.Scene {
     
     }
 
+    createPause(){
+        const pauseButton = this.add.image(this.config.width - 10, this.config.height -10, 'pause')
+        .setInteractive()
+        .setScale(3)
+        .setOrigin(1);
+
+        // pauseButton.setInteractive();
+
+        pauseButton.on('pointerdown', () => {
+            this.physics.pause();
+            this.scene.pause();
+        })
+    }
+
     handleInputs() {
         this.input.on('pointerdown', this.flap, this);
         this.input.keyboard.on('keydown_SPACE', this.flap, this);
@@ -107,6 +115,7 @@ class PlayScene extends Phaser.Scene {
                 if (tempTrees.length === 2) {
                     this.placeTree(...tempTrees);
                     this.increaseScore();
+                    this.saveBestScore()
                 }
             }
         })
@@ -121,7 +130,7 @@ class PlayScene extends Phaser.Scene {
         return rightMostX;
     }
 
-    setBestScore(){
+    saveBestScore(){
         const bestScoreText = localStorage.getItem('bestScore');
         const bestScore = bestScoreText && parseInt(bestScoreText, 10);
 
@@ -134,7 +143,7 @@ class PlayScene extends Phaser.Scene {
         this.physics.pause();
         this.witch.setTint(0xEE4824);
 
-        this.setBestScore();
+        this.saveBestScore();
         this.time.addEvent({
             delay: 1000,
             callback: () => {
