@@ -9,6 +9,7 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('witch', 'assets/witch.png');
         this.load.image('tree', 'assets/tree.png');
         this.load.image('pause', 'assets/pause.png');
+        this.load.image('back', 'assets/back.png');
     }
     create() {
         this.scene.start('MenuScene');
