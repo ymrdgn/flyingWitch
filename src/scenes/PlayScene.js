@@ -8,6 +8,7 @@ class PlayScene extends BaseScene {
 
         this.witch = null;
         this.trees = null;
+        this.isPaused = false;
 
         this.treeHorizontalDistance = 0;
         this.treeVerticalDistanceRange = [150, 250];
@@ -26,11 +27,39 @@ class PlayScene extends BaseScene {
         this.createScore();
         this.createPause();
         this.handleInputs();
+        this.listenToEvents();
     }
 
     update() {
         this.checkGameStatus();
         this.recyclePipes();
+    }
+
+    listenToEvents() {
+        if (this.pauseEvent) {
+            return;
+        }
+        this.pauseEvent = this.events.on('resume', () => {
+            this.initialTime = 3;
+            this.countDownText = this.add.text(...this.screenCenter, 'Fly in: ' + this.initialTime, this.fontOptions).setOrigin(0.5);
+            this.timedEvent = this.time.addEvent({
+                delay: 1000,
+                callback: this.countDown,
+                callbackScope: this,
+                loop: true
+            })
+        })
+    }
+
+    countDown() {
+        this.initialTime--;
+        this.countDownText.setText('Fly in: ' + this.initialTime);
+        if (this.initialTime <= 0) {
+            this.isPaused = false;
+            this.countDownText.setText('');
+            this.physics.resume();
+            this.timedEvent.remove();
+        }
     }
 
     createBG() {
@@ -67,18 +96,20 @@ class PlayScene extends BaseScene {
         this.scoreText = this.add.text(16, 16, `Score: ${0}`, { fontSize: "28px", fill: "#FF5F15" });
         const bestScore = localStorage.getItem('bestScore');
         this.bestScoreText = this.add.text(16, 52, `Best Score: ${bestScore || 0}`, { fontSize: "16px", fill: "#FF5F15" });
-    
+
     }
 
-    createPause(){
-        const pauseButton = this.add.image(this.config.width - 10, this.config.height -10, 'pause')
-        .setInteractive()
-        .setScale(3)
-        .setOrigin(1);
+    createPause() {
+        this.isPaused = false;
+        const pauseButton = this.add.image(this.config.width - 10, this.config.height - 10, 'pause')
+            .setInteractive()
+            .setScale(3)
+            .setOrigin(1);
 
         // pauseButton.setInteractive();
 
         pauseButton.on('pointerdown', () => {
+            this.isPaused = true;
             this.physics.pause();
             this.scene.pause();
             this.scene.launch('PauseScene');
@@ -131,7 +162,7 @@ class PlayScene extends BaseScene {
         return rightMostX;
     }
 
-    saveBestScore(){
+    saveBestScore() {
         const bestScoreText = localStorage.getItem('bestScore');
         const bestScore = bestScoreText && parseInt(bestScoreText, 10);
 
@@ -155,6 +186,9 @@ class PlayScene extends BaseScene {
     }
 
     flap() {
+        if(this.isPaused){
+            return;
+        }
         this.witch.body.velocity.y = -this.flapVelocity;
     }
 
