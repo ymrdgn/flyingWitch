@@ -6,7 +6,7 @@ import PreloadScene from "./scenes/PreloadScene";
 import ScoreScene from "./scenes/ScoreScene";
 import PauseScene from "./scenes/PauseScene";
 
-const WIDTH = 800;
+const WIDTH = 400;
 const HEIGHT = 600;
 const WITCH_POSITION = { x: WIDTH * 0.1, y: HEIGHT / 2 };
 

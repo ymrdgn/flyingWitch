@@ -11,15 +11,30 @@ class PlayScene extends BaseScene {
         this.isPaused = false;
 
         this.treeHorizontalDistance = 0;
-        this.treeVerticalDistanceRange = [150, 250];
-        this.treeHorizontalDistanceRange = [450, 500];
         this.flapVelocity = 300;
 
         this.score = 0;
         this.scoreText = "";
+
+        this.currentDifficulty = 'easy';
+        this.difficulties = {
+            'easy': {
+                treeHorizontalDistanceRange: [300, 350],
+                treeVerticalDistanceRange: [150, 200]
+            },
+            'normal': {
+                treeHorizontalDistanceRange: [280, 330],
+                treeVerticalDistanceRange: [140, 190]
+            },
+            'hard': {
+                treeHorizontalDistanceRange: [250, 310],
+                treeVerticalDistanceRange: [120, 150]
+            }
+        }
     }
 
     create() {
+        this.currentDifficulty = 'easy';
         super.create();
         this.createWitch();
         this.createTree();
@@ -127,10 +142,11 @@ class PlayScene extends BaseScene {
         }
     }
     placeTree(uTree, lTree) {
+        const difficulty = this.difficulties[this.currentDifficulty];
         const rightMostX = this.getRightMostTree();
-        const treeVerticalDistance = Phaser.Math.Between(...this.treeVerticalDistanceRange);
+        const treeVerticalDistance = Phaser.Math.Between(...difficulty.treeVerticalDistanceRange);
         const treeVerticalPosition = Phaser.Math.Between(0 + 20, this.config.height - 20 - treeVerticalDistance)
-        const treeHorizontalDistance = Phaser.Math.Between(...this.treeHorizontalDistanceRange);
+        const treeHorizontalDistance = Phaser.Math.Between(...difficulty.treeHorizontalDistanceRange);
 
         uTree.x = rightMostX + treeHorizontalDistance;
         uTree.y = treeVerticalPosition;
@@ -147,10 +163,19 @@ class PlayScene extends BaseScene {
                 if (tempTrees.length === 2) {
                     this.placeTree(...tempTrees);
                     this.increaseScore();
-                    this.saveBestScore()
+                    this.saveBestScore();
+                    this.increaseDifficulty();
                 }
             }
         })
+    }
+    increaseDifficulty(){
+        if(this.score === 1){
+            this.currentDifficulty = 'normal';
+        }
+        if(this.score === 3){
+            this.currentDifficulty = 'hard';
+        }
     }
 
     getRightMostTree() {
